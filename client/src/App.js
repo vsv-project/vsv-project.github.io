@@ -33,7 +33,6 @@ class Login extends React.PureComponent {
     console.log(props)
     this.setData = props.setData;
     this.socket = props.socket;
-    console.log(this.setData)
     this.socket.on("signup", (dataObject) => {
       const {timestamp, status, data} = dataObject;
       console.log(timestamp, status, data)
@@ -97,7 +96,7 @@ class Login extends React.PureComponent {
           <label>Password:</label>
           <input type="password" name="password" placeholder="password" onChange={(event) => this.onChangeEvent(event)} />
           <button type="button" onClick={() => this.sendSignUp(this.state.email, this.state.password)}>Sign up</button>
-          {this.state.loggedIn === false ? <button type="button" onChange={() => this.sendLogin(this.state.email, this.state.password)}>Log in</button> : <button type="button" onChange={() => this.sendSignout()}>Log out</button>}
+          {this.state.loggedIn === false ? <button type="button" onClick={() => this.sendLogin(this.state.email, this.state.password)}>Log in</button> : <button type="button" onClick={() => this.sendSignout()}>Log out</button>}
         </form>
       </div>
     );
