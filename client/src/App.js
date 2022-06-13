@@ -78,9 +78,11 @@ class Login extends React.PureComponent {
     this.socket.off("signout");
   }
   sendSignUp = (email, password) => {
+    console.log(`signup: ${email} ${password}`)
     this.socket.emit("signup", {email, password});
   }
   sendLogin = (email, password) => {
+    console.log(`login ${email} ${password}`)
     this.socket.emit("login", {email, password});
   }
   sendSignout = () => {
