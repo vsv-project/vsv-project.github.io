@@ -39,33 +39,33 @@ class Login extends React.PureComponent {
       console.log(timestamp, status, data)
       if (status === "success") {
         this.setState({loggedIn: true})
-        this.setData(data)
+        this.setData({...data, loggedIn: true})
       } else {
         this.setData(data)
       }
     })
-    this.socket.on("login", (data) => {
-      const {timestamp, status, dataObject} = data;
-      console.log(timestamp, status, dataObject)
+    this.socket.on("login", (dataObject) => {
+      const {timestamp, status, data} = dataObject;
+      console.log(timestamp, status, data)
       if (status === "success") {
         this.setState({loggedIn: true})
-        this.setData(dataObject)
+        this.setData({...data, loggedIn: true})
       } else {
-        this.SetData(dataObject)
+        this.SetData(data)
       }
     })
-    this.socket.on("signout", (data) => {
-      const {timestamp, status, dataObject} = data;
-      console.log(timestamp, status, dataObject)
+    this.socket.on("signout", (dataObject) => {
+      const {timestamp, status, data} = dataObject;
+      console.log(timestamp, status, data)
       if (status === "success") {
         this.setState({loggedIn: false})
-        this.setData({user: null})
+        this.setData({user: null, loggedIn: false})
       } else {
-        this.SetData(dataObject)
+        this.SetData(data)
       }
     })
     this.state = {
-      loggedIn: false,
+      loggedIn: props.loggedIn,
       email: "",
       password: "",
     }
@@ -115,18 +115,18 @@ export default class App extends React.Component {
       user: null,
       error: null,
       loggedIn: false,
-      loggedOut: false,
     }
   }
 
   setData = (data) => { 
-    this.setState({[Object.keys(data)[0]]: Object.values(data)[0]});
+    this.setState({...this.state, ...data});
   } /*{key: value}*/
 
   render() {
     let loginProps = {
       socket: this.socket,
-      setData: this.setData 
+      setData: this.setData,
+      loggedIn: this.state.loggedIn, 
     };
     console.log(loginProps)
     const homeProps = {
