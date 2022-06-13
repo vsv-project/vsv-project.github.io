@@ -20,8 +20,8 @@ class Home extends React.PureComponent {
     return (
       <div>
         <h1>Home</h1>
-        {this.state.user ? <p>Hello, {this.state.user}</p> : <p>Hello, guest</p>}
-        {this.state.error ? <p>{this.state.error}</p> : <p>No error</p>}
+        {this.state.user ? <p>Hello, {JSON.stringify(this.state.user)}</p> : <p>Hello, guest</p>}
+        {this.state.error ? <p>{JSON.stringify(this.state.error)}</p> : <p>No error</p>}
       </div>
     );
   }
