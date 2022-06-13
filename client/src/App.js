@@ -97,7 +97,7 @@ class Login extends React.PureComponent {
           <label>Password:</label>
           <input type="password" name="password" placeholder="password" onChange={(event) => this.onChangeEvent(event)} />
           <button type="button" onClick={() => this.sendSignUp(this.state.email, this.state.password)}>Sign up</button>
-          {this.state.loggedIn === true ? <button type="button" onChange={() => this.sendLogin(this.state.email, this.state.password)}>Log in</button> : <button type="button" onChange={() => sendSignout()}>Log out</button>}
+          {this.state.loggedIn === true ? <button type="button" onChange={() => this.sendLogin(this.state.email, this.state.password)}>Log in</button> : <button type="button" onChange={() => this.sendSignout()}>Log out</button>}
         </form>
       </div>
     );
