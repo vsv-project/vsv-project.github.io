@@ -4,6 +4,7 @@ import {
   BrowserRouter as Router, 
   Routes, 
   Route, 
+  Link,
 } from "react-router-dom";
 import "./App.css";
 
@@ -133,16 +134,21 @@ export default class App extends React.Component {
       error: this.state.error,
     };
     return (
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home {...homeProps} />} /> 
-          <Route path="/login" element={<Login {...loginProps} />}/>
-          {/*
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} /> 
-          */}
-        </Routes>
-      </Router>
+      <React.Fragment>
+        <Router>
+          <Link to={"/"}>Home</Link>
+          <br/>
+          <Link to={"/login"}>Login</Link>
+          <Routes>
+            <Route path="/" element={<Home {...homeProps} />} /> 
+            <Route path="/login" element={<Login {...loginProps} />}/>
+            {/*
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} /> 
+            */}
+          </Routes>
+        </Router>
+      </React.Fragment> 
     )
   }
 }
