@@ -25,7 +25,33 @@ class Login extends React.PureComponent {
     this.socket = props.socket;
     this.socket.on("signup", (data) => {
       const {timestamp, status, dataObject} = data;
-      console.log()
+      console.log(timestamp, status, dataObject)
+      if (status === "success") {
+        this.setState({loggedIn: true})
+        this.setUser(dataObject)
+      } else {
+        this.SetError(dataObject)
+      }
+    })
+    this.socket.on("login", (data) => {
+      const {timestamp, status, dataObject} = data;
+      console.log(timestamp, status, dataObject)
+      if (status === "success") {
+        this.setState({loggedIn: true})
+        this.setUser(dataObject)
+      } else {
+        this.SetError(dataObject)
+      }
+    })
+    this.socket.on("signout", (data) => {
+      const {timestamp, status, dataObject} = data;
+      console.log(timestamp, status, dataObject)
+      if (status === "success") {
+        this.setState({loggedIn: false})
+        this.setData({user: null})
+      } else {
+        this.SetData(dataObject)
+      }
     })
     this.state = {
       loggedIn: false,
@@ -38,6 +64,16 @@ class Login extends React.PureComponent {
   }
   componentWillUnmount() {
     this.socket.off("signup");
+    this.socket.off("login");
+  }
+  sendSignUp = (email, password) => {
+    this.socket.emit("signup", {email, password});
+  }
+  sendLogin = (email, password) => {
+    this.socket.emit("login", {email, password});
+  }
+  sendSignout = () => {
+    this.socket.emit("signout");
   }
   render() {
     return (
@@ -74,18 +110,14 @@ export default class App extends React.Component {
     })
   }
 
-  setUser = (user) => {
-    this.setState({user: user});
-  }
-  setError = (error) => {
-    this.setState({error: error});
+  setData = (data /*{key: value}*/ ) => {
+    this.setState({[Object.keys(data)[0]]: Object.values(data)[0]});
   }
 
   render() {
     const loginProps = {
       socket: this.socket,
-      setUser: this.setUser, 
-      setError: this.setError, 
+      setData: this.setData 
     };
     const homeProps = {
       user: this.state.user, 

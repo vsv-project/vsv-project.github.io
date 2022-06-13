@@ -17,22 +17,6 @@ const firebaseConfig = {
 const fapp = initializeApp(firebaseConfig);
 const auth = getAuth(fapp);
 
-//signInWithEmailAndPassword(auth, email, password)
-//  .then((userCredential) => {
-//    // Signed in 
-//    const user = userCredential.user;
-//  })
-//  .catch((error) => {
-//    const errorCode = error.code;
-//    const errorMessage = error.message;
-//    console.log(errorCode, errorMessage);
-//  });
-//signOut(auth).then(() => {
-//  // Sign-out successful.
-//}).catch((error) => {
-//  console.log(error);
-//});
-
 const app = express();
 
 app.use(express.static(path.resolve(__dirname, '../client/build')));
@@ -48,10 +32,11 @@ socket_app.on("connection", (socket) => {
   })
   socket.on("signup", (data) => {
     console.log(data);  // {email, password}
+    const {email, password} = data;
     createUserWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Signed up successfully. 
-      const user = userCredential.user || null;
+      const user = userCredential.user
       const status = "success"
       console.log(user)
       socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {user: user}});
@@ -61,8 +46,44 @@ socket_app.on("connection", (socket) => {
       const errorMessage = error.message;
       const status = "failure"
       console.log(errorCode, errorMessage);
-      socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {errorCode: errorMessage}});
+      socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {error: {errorCode: errorMessage}}});
     });
+
+    socket.on("login", (data) => {
+      console.log(data);  // {email, password}
+      const {email, password} = data;
+      signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in 
+        const user = userCredential.user
+        const status = "success";
+        console.log(user);
+        socket.emit("login", {timestamp: new Date().toUTCString(), status: status, data: {user: user}});
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        const status = "failure";
+        console.log(errorCode, errorMessage);
+        socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {error: {errorCode: errorMessage}}});
+      });
+    })
+
+    socket.on("signout", () => {
+      signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        const status = "success";
+        socket.emit("signout", {timestamp: new Date().toUTCString(), status: status, data: {}});
+      })
+      .catch((error) => {
+        console.log(error);
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        const status = "failure";
+        socket.emit("signout", {timestamp: new Date().toUTCString(), status: status, data: {error: {errorCode: errorMessage}}});
+      });
+    })
   });
 });
 
