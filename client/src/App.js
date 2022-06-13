@@ -31,7 +31,7 @@ class Login extends React.PureComponent {
         this.setState({loggedIn: true})
         this.setData(data)
       } else {
-        this.SetData(data)
+        this.setData(data)
       }
     })
     this.socket.on("login", (data) => {
@@ -66,6 +66,7 @@ class Login extends React.PureComponent {
   componentWillUnmount() {
     this.socket.off("signup");
     this.socket.off("login");
+    this.socket.off("signout");
   }
   sendSignUp = (email, password) => {
     this.socket.emit("signup", {email, password});
