@@ -48,7 +48,7 @@ class Login extends React.PureComponent {
       console.log(timestamp, status, data)
       if (status === "success") {
         this.setState({loggedIn: true})
-        this.setData({...data, loggedIn: true})
+        this.setData({...data, loggedIn: true, error: null})
       } else {
         this.SetData(data)
       }
@@ -58,7 +58,7 @@ class Login extends React.PureComponent {
       console.log(timestamp, status, data)
       if (status === "success") {
         this.setState({loggedIn: false})
-        this.setData({user: null, loggedIn: false})
+        this.setData({user: null, loggedIn: false, error: null})
       } else {
         this.SetData(data)
       }
