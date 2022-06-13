@@ -96,7 +96,10 @@ class Login extends React.PureComponent {
 export default class App extends React.Component {
   constructor(props) {
     super(props);
-    this.socket = null;
+    this.socket = io.connect("/api");
+    this.socket.on("connect", () => {
+      console.log("connected");
+    })
     this.state = {
       user: null,
       error: null,
@@ -104,22 +107,17 @@ export default class App extends React.Component {
       loggedOut: false,
     }
   }
-  componentDidMount() {
-    this.socket = io.connect("/api");
-    this.socket.on("connect", () => {
-      console.log("connected");
-    })
-  }
 
   setData = (data  ) => { 
     this.setState({[Object.keys(data)[0]]: Object.values(data)[0]});
   } /*{key: value}*/
 
   render() {
-    const loginProps = {
+    let loginProps = {
       socket: this.socket,
       setData: this.setData 
     };
+    console.log(loginProps)
     const homeProps = {
       user: this.state.user, 
       error: this.state.error,
