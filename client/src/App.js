@@ -28,9 +28,9 @@ class Login extends React.PureComponent {
       console.log(timestamp, status, data)
       if (status === "success") {
         this.setState({loggedIn: true})
-        this.setData(dataObject)
+        this.setData(data)
       } else {
-        this.SetData(dataObject)
+        this.SetData(data)
       }
     })
     this.socket.on("login", (data) => {
