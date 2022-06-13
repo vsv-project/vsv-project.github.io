@@ -8,10 +8,19 @@ import {
 import "./App.css";
 
 class Home extends React.PureComponent {
+  constructor(props) {
+    super(props)
+    this.state = {
+      user: props.user,
+      error: props.error,
+    }
+  }
   render() {
     return (
       <div>
         <h1>Home</h1>
+        {this.state.user ? <p>Hello, {this.state.user}</p> : <p>Hello, guest</p>}
+        {this.state.error ? <p>{this.state.error}</p> : <p>No error</p>}
       </div>
     );
   }
