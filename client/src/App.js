@@ -20,6 +20,7 @@ class Home extends React.PureComponent {
 class Login extends React.PureComponent {
   constructor(props) {
     super(props);
+    console.log(props)
     this.setUser = props.setUser;
     this.SetError = props.SetError;
     this.socket = props.socket;
@@ -28,9 +29,9 @@ class Login extends React.PureComponent {
       console.log(timestamp, status, dataObject)
       if (status === "success") {
         this.setState({loggedIn: true})
-        this.setUser(dataObject)
+        this.setData(dataObject)
       } else {
-        this.SetError(dataObject)
+        this.SetData(dataObject)
       }
     })
     this.socket.on("login", (data) => {
@@ -38,9 +39,9 @@ class Login extends React.PureComponent {
       console.log(timestamp, status, dataObject)
       if (status === "success") {
         this.setState({loggedIn: true})
-        this.setUser(dataObject)
+        this.setData(dataObject)
       } else {
-        this.SetError(dataObject)
+        this.SetData(dataObject)
       }
     })
     this.socket.on("signout", (data) => {
@@ -110,9 +111,9 @@ export default class App extends React.Component {
     })
   }
 
-  setData = (data /*{key: value}*/ ) => {
+  setData = (data  ) => { 
     this.setState({[Object.keys(data)[0]]: Object.values(data)[0]});
-  }
+  } /*{key: value}*/
 
   render() {
     const loginProps = {
