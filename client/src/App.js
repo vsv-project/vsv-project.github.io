@@ -23,6 +23,7 @@ class Login extends React.PureComponent {
     console.log(props)
     this.setData = props.setData;
     this.socket = props.socket;
+    console.log(this.setData)
     this.socket.on("signup", (dataObject) => {
       const {timestamp, status, data} = dataObject;
       console.log(timestamp, status, data)
@@ -107,7 +108,7 @@ export default class App extends React.Component {
     }
   }
 
-  setData = (data  ) => { 
+  setData = (data) => { 
     this.setState({[Object.keys(data)[0]]: Object.values(data)[0]});
   } /*{key: value}*/
 
