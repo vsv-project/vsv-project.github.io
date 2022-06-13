@@ -1,23 +1,107 @@
 import React from "react";
-import logo from "./logo.svg";
+import io from "socket.io-client";
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+} from "react-router-dom";
 import "./App.css";
 
-function App() {
-  const [data, setData] = React.useState(null);
-  React.useEffect(() => {
-    fetch("/api")
-      .then((res) => res.json())
-      .then((data) => setData(data.message));
-  }, []);
-
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>{!data ? "Loading..." : data}</p>
-      </header>
-    </div>
-  );
+class Home extends React.PureComponent {
+  render() {
+    return (
+      <div>
+        <h1>Home</h1>
+      </div>
+    );
+  }
 }
 
-export default App;
+class Login extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.setUser = props.setUser;
+    this.SetError = props.SetError;
+    this.socket = props.socket;
+    this.socket.on("signup", (data) => {
+      const {timestamp, status, dataObject} = data;
+      console.log()
+    })
+    this.state = {
+      loggedIn: false,
+      email: "",
+      password: "",
+    }
+  }
+  onChangeEvent = (event) => {
+    this.setState({[event.target.name]: event.target.value});
+  }
+  componentWillUnmount() {
+    this.socket.off("signup");
+  }
+  render() {
+    return (
+      <div>
+        <h1>Login</h1>
+        <form>
+          <label>Email:</label>
+          <input type="text" name="email" placeholder="email" onChange={(event) => this.onChangeEvent(event)} />
+          <label>Password:</label>
+          <input type="password" name="password" placeholder="password" onChange={(event) => this.onChangeEvent(event)} />
+          <button type="button" onClick={() => this.sendSignUp(this.state.email, this.state.password)}>Sign up</button>
+          {<button>Log in</button>}
+        </form>
+      </div>
+    );
+  }
+}
+
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.socket = null;
+    this.state = {
+      user: null,
+      error: null,
+      loggedIn: false,
+      loggedOut: false,
+    }
+  }
+  componentDidMount() {
+    this.socket = io.connect("/api");
+    this.socket.on("connect", () => {
+      console.log("connected");
+    })
+  }
+
+  setUser = (user) => {
+    this.setState({user: user});
+  }
+  setError = (error) => {
+    this.setState({error: error});
+  }
+
+  render() {
+    const loginProps = {
+      socket: this.socket,
+      setUser: this.setUser, 
+      setError: this.setError, 
+    };
+    const homeProps = {
+      user: this.state.user, 
+      error: this.state.error,
+    };
+    return (
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home {...homeProps} />} /> 
+          <Route path="/login" element={<Login {...loginProps} />}/>
+          {/*
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} /> 
+          */}
+        </Routes>
+      </Router>
+    )
+  }
+}

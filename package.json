@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/index.js",
+    "start": "node server/index.mjs",
     "build": "cd client && npm install && npm run build"
   },
   "engines": {
@@ -15,6 +15,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.1",
+    "firebase": "^9.8.3",
+    "http": "^0.0.1-security",
     "socket.io": "^4.5.1"
   }
 }
