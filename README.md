@@ -2,6 +2,4 @@
 
 Website: [vsv.bruh.news](https://vsv.bruh.news)
 
-# Installation
-
-...
+[Backend](https://github.com/vsv-project/backend)
