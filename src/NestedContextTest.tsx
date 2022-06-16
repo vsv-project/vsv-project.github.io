@@ -19,7 +19,7 @@ const Parent = () => {
         </>
     )
 }
-const checkContext = (ctx: React.Context<any>) => {
+const useContextCheck = (ctx: React.Context<any>) => {
     const context = useContext(ctx)
     if (context !== undefined) {
         return context
@@ -28,7 +28,7 @@ const checkContext = (ctx: React.Context<any>) => {
     }
 }
 const Child = () => {
-    const {auth, setAuth} = checkContext(AuthContext)
+    const {auth, setAuth} = useContextCheck(AuthContext)
         return (
             <>
                 {auth}
