@@ -1,6 +1,8 @@
-import React, { Component } from "react";
+import { Component } from "react";
 // import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { io } from "socket.io-client";
+import UserContext from "./UserContext";
+import ContextTester from "./ContextTester";
 
 class SocketTest extends Component {
   state: { status: any };
@@ -56,17 +58,22 @@ class Test extends Component {
 }
 
 export default function App() {
-  return (
-    <React.Fragment>
-      <Test />
-      <SocketTest />
+  var user = "😁"; //TODO Put auth and user details here
 
-      {/*<Router>
+  return (
+    <>
+      {/* Provides to all children */}
+      <UserContext.Provider value={user}>
+        <Test />
+        <SocketTest />
+        <ContextTester />
+        {/*<Router>
           <Routes>
-            <Route path="/" element={<Test />} />
+          <Route path="/" element={<Test />} />
           </Routes>
-        </Router>
+          </Router>
         */}
-    </React.Fragment>
+      </UserContext.Provider>
+    </>
   );
 }
