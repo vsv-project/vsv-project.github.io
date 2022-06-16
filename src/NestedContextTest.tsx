@@ -19,21 +19,20 @@ const Parent = () => {
         </>
     )
 }
-const Child = () => {
-    const context = useContext(AuthContext)
-    if (context === undefined) {
-        return (
-            <>
-                bruh
-            </>
-        )
+const checkContext = (ctx: React.Context<any>) => {
+    const context = useContext(ctx)
+    if (context !== undefined) {
+        return context
     } else {
+        throw new Error("it no worke")
+    }
+}
+const Child = () => {
+    const {auth, setAuth} = checkContext(AuthContext)
         return (
             <>
-                {context.auth}
-                <button onClick={() => context.setAuth(context.auth++)}>add 1</button>
+                {auth}
+                <button onClick={() => setAuth(auth+1)}>add 1</button>
             </>
         )
     }
-    
-}
