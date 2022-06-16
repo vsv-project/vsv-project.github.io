@@ -3,6 +3,7 @@ import { Component } from "react";
 import { io, Socket } from "socket.io-client";
 import UserContext from "./UserContext";
 import ContextTester from "./ContextTester";
+import NestedContextTest from "./NestedContextTest";
 
 class SocketTest extends Component {
   state: { status: any };
@@ -67,6 +68,7 @@ export default function App() {
         <Test />
         <SocketTest />
         <ContextTester />
+        <NestedContextTest />
         {/*<Router>
           <Routes>
           <Route path="/" element={<Test />} />
