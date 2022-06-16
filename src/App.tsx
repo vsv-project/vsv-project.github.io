@@ -1,6 +1,6 @@
 import { Component } from "react";
 // import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import UserContext from "./UserContext";
 import ContextTester from "./ContextTester";
 
@@ -16,7 +16,7 @@ class SocketTest extends Component {
     this.socket = io(process.env.REACT_APP_API_ENDPOINT + "/wss", {
       transports: ["websocket"],
     }).connect();
-    this.socket.on("connection", (socket: any) => {
+    this.socket.on("connection", (socket: Socket) => {
       console.log("connected");
       this.setState({ status: "connected" });
       socket.on("disconnect", () => {
