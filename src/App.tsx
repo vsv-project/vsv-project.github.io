@@ -13,7 +13,7 @@ class SocketTest extends Component {
     super(props);
     this.socket = io(process.env.REACT_APP_API_ENDPOINT + "/wss", {
       transports: ["websocket"],
-    })
+    }).connect()
     console.log("connecting to socket")
     console.log(this.socket)
     this.socket.connect();
