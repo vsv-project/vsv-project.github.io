@@ -13,18 +13,18 @@ class SocketTest extends Component {
     super(props);
     this.socket = io(process.env.REACT_APP_API_ENDPOINT + "/wss", {
       transports: ["websocket"],
-    }).connect()
+    })
     console.log("connecting to socket")
     console.log(this.socket)
-    this.socket.connect();
-    this.socket.on("connection", (socket: Socket) => {
+    this.socket =  this.socket.connect();
+    this.socket.on("connect", () => {
       console.log("connected");
       this.setState({ status: "connected" });
-      socket.on("disconnect", () => {
-        console.log("disconnected");
-        this.setState({ status: "disconnected" });
-      });
     });
+    this.socket.on("disconnect", () => {
+      console.log("disconnected");
+      this.setState({ status: "disconnected" });
+    })
     this.state = {
       status: "disconnected",
       socket: this.socket
