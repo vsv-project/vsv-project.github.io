@@ -6,17 +6,17 @@ import ContextTester from "./ContextTester";
 import NestedContextTest from "./NestedContextTest";
 
 class SocketTest extends Component {
-  state: { status: any };
-  socket: any = null;
+  state: { status: any, socket: Socket };
+  socket: Socket;
 
   constructor(props: any) {
     super(props);
-    this.state = {
-      status: "disconnected",
-    };
     this.socket = io(process.env.REACT_APP_API_ENDPOINT + "/wss", {
       transports: ["websocket"],
-    }).connect();
+    })
+    console.log("connecting to socket")
+    console.log(this.socket)
+    this.socket.connect();
     this.socket.on("connection", (socket: Socket) => {
       console.log("connected");
       this.setState({ status: "connected" });
@@ -25,6 +25,10 @@ class SocketTest extends Component {
         this.setState({ status: "disconnected" });
       });
     });
+    this.state = {
+      status: "disconnected",
+      socket: this.socket
+    };
   }
   componentWillUnmount() {
     this.socket.disconnect();
