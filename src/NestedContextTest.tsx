@@ -1,17 +1,21 @@
 import React, { useContext, createContext, useState } from "react";
 
 const AuthContext = createContext<{auth: any, setAuth: Function} | undefined> (undefined);
+type providerProps = {children: React.ReactNode}
 export default function NestedContextTest() {
     const [auth, setAuth] = useState(1);
     return (
         <React.Fragment>
             <AuthContext.Provider value={{auth, setAuth}}>
-                <Parent />
+                <Parent>
+                    <Child/>
+                </Parent>
+                <Child />
             </AuthContext.Provider>
         </React.Fragment>
     )
 }
-const Parent = () => {
+const Parent = ({children}: providerProps) => {
     return (
         <>
             <Child/>
