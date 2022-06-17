@@ -18,7 +18,7 @@ export default function NestedContextTest() {
 const Parent = ({children}: providerProps) => {
     return (
         <>
-            <Child/>
+            {children}
         </>
     )
 }
