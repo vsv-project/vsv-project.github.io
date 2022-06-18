@@ -13,7 +13,7 @@ const Home = () => {
                 Home
             </h1>
             {auth}
-            <button type="button" onClick={() => setAuth(1)} ></button>
+            <button type="button" onClick={() => setAuth(1+auth)} ></button>
         </>
     )
 }
