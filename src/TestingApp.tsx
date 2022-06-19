@@ -10,7 +10,13 @@ import ContextTester from "./ContextTester";
 const Home = () => {
     const {auth, setAuth} = useContextCheck(AuthContext)
     const socket = useContextCheck(SocketContext)
-    const user = "test user";
+    socket.on("connect", () => {
+        console.log("connected to socket")
+    })
+    socket.on("disconnect", () => {
+        console.log("disconnected from socket")
+    })
+    const user = "😁";
     return (
         <UserContext.Provider value={user}>
             <h1>
