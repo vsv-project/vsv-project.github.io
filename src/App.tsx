@@ -38,7 +38,7 @@ class SocketTest extends Component {
   }
 }
 
-class Test extends Component {
+export class Test extends Component {
   state = { msg: null };
 
   componentDidMount() {

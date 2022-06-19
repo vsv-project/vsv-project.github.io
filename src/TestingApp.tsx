@@ -3,18 +3,25 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import useContextCheck from "./useContextCheck";
 import { Auth } from "firebase/auth"
 import { Socket, io } from "socket.io-client";
+import UserContext from "./UserContext";
+import ContextTester from "./ContextTester";
 
 
 const Home = () => {
     const {auth, setAuth} = useContextCheck(AuthContext)
+    const socket = useContextCheck(SocketContext)
+    const user = "test user";
     return (
-        <>
+        <UserContext.Provider value={user}>
             <h1>
                 Home
             </h1>
             {auth}
-            <button type="button" onClick={() => setAuth(1+auth)} ></button>
-        </>
+            <button type="button" onClick={() => setAuth(1+auth)}>Add 1 to auth</button>
+            <button type="button" onClick={() => console.log(socket)}>Console log socket</button>
+            <br/>
+            <ContextTester />
+        </UserContext.Provider>
     )
 }
 
