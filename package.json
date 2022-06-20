@@ -1,6 +1,7 @@
 {
   "name": "vsv-project",
   "version": "0.1.0",
+  "homepage": "https://vsv.bruh.news",
   "private": true,
   "dependencies": {
     "@types/node": "^17.0.43",
