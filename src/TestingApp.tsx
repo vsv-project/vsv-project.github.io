@@ -25,15 +25,15 @@ const Home = () => {
     }
     const signupListener = useCallback((data: any) => {
         console.log(data)
-        setAuth(data.user)
+        setAuth(data.data.user)
     }, [setAuth]);
     const loginListener = useCallback((data: any) => {
         console.log(data)
-        setAuth(data.user)
+        setAuth(data.data.user)
     }, [setAuth]);
     const signoutListener = useCallback((data: any) => {
         console.log(data)
-        setAuth(data.user)
+        setAuth(data.data.user)
     }, [setAuth]);
 
     useEffect(() => {
