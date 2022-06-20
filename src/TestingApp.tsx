@@ -18,7 +18,7 @@ const Home = () => {
         socket.emit("signup", {email, password});
     }
     const login = (email: string, password: string) => {
-        socket.emit("signup", {email, password});
+        socket.emit("login", {email, password});
     }
     const signout = () => {
         socket.emit("signout")
