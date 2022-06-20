@@ -25,6 +25,36 @@ const Home = () => {
     )
 }
 
+const Channels = () => {
+    const socket = useContextCheck(SocketContext)
+    const [channels, setChannels] = useState<any[] | undefined>([])
+
+    const channelListener = useCallback((data: any) => {
+        if (data.status === "success") {
+            setChannels(data.data.channels)
+        } else {
+            setChannels(data.data.error)
+        }
+    }, [])
+    useEffect(() => {
+        socket.on("getChannels", channelListener)
+        socket.emit("getChannels")
+        return () => {
+            socket.off("getChannels", channelListener)
+        }
+    }, [channelListener, socket])
+    return (
+        <>
+            {channels 
+                ?   channels.map((channel, key) => (
+                        <div key={key}>{channel}</div>
+                ))
+                :   <div>Loading...</div>
+        }
+        </>
+    )
+}
+
 const App = () => {
     const [auth, setAuth] = useState<any | undefined>(0);
     const connect = useCallback(() => {
@@ -50,6 +80,7 @@ const App = () => {
                     <Router>
                         <Routes>
                             <Route path="/" element={<Home />} />
+                            <Route path="/channels" element={<Channels />}/>
                         </Routes>
                     </Router>
                 </AuthContext.Provider>
