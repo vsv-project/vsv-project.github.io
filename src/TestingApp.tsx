@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { SocketContext, socket } from "./context/socket";
 import { AuthContext } from "./context/auth";
 import useContextCheck from "./context/useContextCheck";
@@ -16,6 +16,9 @@ const Home = () => {
             <h1>
                 Home
             </h1>
+            <Link to="/channels">
+                Channels
+            </Link>
             {auth}
             <button type="button" onClick={() => setAuth(1+auth)}>Add 1 to auth</button>
             <button type="button" onClick={() => console.log(socket)}>Console log socket</button>
@@ -45,6 +48,7 @@ const Channels = () => {
     }, [channelListener, socket])
     return (
         <>
+            <Link to="/">Home</Link>
             {channels 
                 ?   channels.map((channel, key) => (
                         <div key={key}>{channel}</div>
