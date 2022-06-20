@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { SocketContext, socket } from "./context/socket";
 import { AuthContext } from "./context/auth";
 import useContextCheck from "./context/useContextCheck";
