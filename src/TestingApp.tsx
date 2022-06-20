@@ -6,6 +6,12 @@ import useContextCheck from "./context/useContextCheck";
 import UserContext from "./UserContext";
 import ContextTester from "./ContextTester";
 
+type channel = {
+    name: any;
+    id: any;
+    members: any[];
+    messages: any[];
+}
 
 const Home = () => {
     const {auth, setAuth} = useContextCheck(AuthContext)
@@ -75,7 +81,32 @@ const Channels = () => {
 
     const channelListener = useCallback((data: any) => {
         if (data.status === "success") {
-            setChannels(data.data.channels)
+            let channels = [];
+            let channelsKeys = Object.keys(data.data.channels)
+            for (let i = 0; i < channelsKeys.length; i++) {
+                let members = [];
+                let messages = [];
+                let channel: channel = {
+                    id: data.data.channels[channelsKeys[i]].id,
+                    name: data.data.channels[channelsKeys[i]].name,
+                    members: [],
+                    messages: [],
+
+                };
+                let membersKeys = Object.keys(data.data.channels[channelsKeys[i]].members)
+                let messagesKeys = Object.keys(data.data.channels[channelsKeys[i]].messages)
+                for (let j = 0; j < membersKeys.length; j++) {
+                   members.push(data.data.channels[channelsKeys[i]].members[membersKeys[j]])
+                }
+                for (let j = 0; j < messagesKeys.length; j++) {
+                    messages.push(data.data.channels[channelsKeys[i]].messages[messagesKeys[j]])
+                }
+                channel.members = members;
+                channel.messages = messages;
+                channels.push(channel);
+                
+            }
+            setChannels(channels)
         } else {
             setChannels(data.data.error)
         }
@@ -90,9 +121,9 @@ const Channels = () => {
     return (
         <>
             <Link to="/">Home</Link>
-            {channels 
+            {channels !== undefined && Object.keys(channels).length > 0
                 ?   channels.map((channel, key) => (
-                        <div key={key}>{channel}</div>
+                        <div key={key}>{channel.name}, {channel.members.map((member: any, index:number) => <div key={index}>{member.name}</div>)}</div>
                 ))
                 :   <div>Loading...</div>
         }
