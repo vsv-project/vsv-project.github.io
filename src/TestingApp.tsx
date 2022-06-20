@@ -1,8 +1,8 @@
-import { useState, createContext } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import useContextCheck from "./useContextCheck";
-import { Auth } from "firebase/auth"
-import { Socket, io } from "socket.io-client";
+import { SocketContext, socket } from "./context/socket";
+import { AuthContext } from "./context/auth";
+import useContextCheck from "./context/useContextCheck";
 import UserContext from "./UserContext";
 import ContextTester from "./ContextTester";
 
@@ -10,12 +10,6 @@ import ContextTester from "./ContextTester";
 const Home = () => {
     const {auth, setAuth} = useContextCheck(AuthContext)
     const socket = useContextCheck(SocketContext)
-    socket.on("connect", () => {
-        console.log("connected to socket")
-    })
-    socket.on("disconnect", () => {
-        console.log("disconnected from socket")
-    })
     const user = "😁";
     return (
         <UserContext.Provider value={user}>
@@ -31,20 +25,23 @@ const Home = () => {
     )
 }
 
-
-type AuthContextProps = {
-    auth: Auth | any | undefined,
-    setAuth: (auth: Auth | undefined) => void
-}
-
-const SocketContext = createContext<Socket | undefined>(undefined);
-const AuthContext = createContext<AuthContextProps | undefined> (undefined)
-
 const App = () => {
-    const [auth, setAuth] = useState<Auth | any | undefined>(0);
-    let socket = io(process.env.REACT_APP_API_ENDPOINT + "/wss", {
-        transports: ["websocket"],
-      }).connect();
+    const [auth, setAuth] = useState<any | undefined>(0);
+    const connect = useCallback(() => {
+        console.log("connected to socket")
+    }, []) 
+
+    const disconnect = useCallback(() => {
+        console.log("disconnected from socket")
+    }, []) 
+    useEffect(() => {
+        socket.on("connect", connect)
+        socket.on("disconnect", disconnect)
+        return () => {
+            socket.off("connect", connect)
+            socket.off("disconnect", disconnect)
+        }
+    }, [connect, disconnect])
 
     return (
         <>
