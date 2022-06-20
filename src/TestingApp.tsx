@@ -8,7 +8,7 @@ import ContextTester from "./ContextTester";
 
 
 const Home = () => {
-    //const {auth, setAuth} = useContextCheck(AuthContext)
+    const {auth, setAuth} = useContextCheck(AuthContext)
     const socket = useContextCheck(SocketContext)
     const user = "😁";
     const [email, setEmail] = useState("");
@@ -23,16 +23,18 @@ const Home = () => {
     const signout = () => {
         socket.emit("signout")
     }
-
     const signupListener = useCallback((data: any) => {
         console.log(data)
-    }, []);
+        setAuth(data.user)
+    }, [setAuth]);
     const loginListener = useCallback((data: any) => {
         console.log(data)
-    }, []);
+        setAuth(data.user)
+    }, [setAuth]);
     const signoutListener = useCallback((data: any) => {
         console.log(data)
-    }, []);
+        setAuth(data.user)
+    }, [setAuth]);
 
     useEffect(() => {
         socket.on("signup", signupListener)
@@ -61,6 +63,7 @@ const Home = () => {
                 <button type="button" onClick={() => signup(email, password)}>Signup</button>
                 <button type="button" onClick={() => signout()}>Signout</button>
             </form>
+            {!auth ? <p>Not logged in</p> : <p>Logged in as {auth.email}</p>}
             <ContextTester />
         </UserContext.Provider>
     )
