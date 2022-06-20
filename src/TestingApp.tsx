@@ -57,9 +57,9 @@ const Home = () => {
             <form>
                 <input type="email" placeholder="Email" name="email" onChange={(e) => setEmail(e.target.value)} />
                 <input type="password" placeholder="Password" name="password" onChange={(e) => setPassword(e.target.value)} />
-                <button onClick={() => login(email, password)}>Login</button>
-                <button onClick={() => signup(email, password)}>Signup</button>
-                <button onClick={() => signout()}>Signout</button>
+                <button type="button" onClick={() => login(email, password)}>Login</button>
+                <button type="button" onClick={() => signup(email, password)}>Signup</button>
+                <button type="button" onClick={() => signout()}>Signout</button>
             </form>
             <ContextTester />
         </UserContext.Provider>
