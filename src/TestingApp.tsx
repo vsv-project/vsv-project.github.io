@@ -80,6 +80,7 @@ const Channels = () => {
     const [channels, setChannels] = useState<any[] | undefined>([])
 
     const channelListener = useCallback((data: any) => {
+        console.log(data)
         if (data.status === "success") {
             let channels = [];
             let channelsKeys = Object.keys(data.data.channels)
@@ -121,12 +122,17 @@ const Channels = () => {
     return (
         <>
             <Link to="/">Home</Link>
-            {channels !== undefined && Object.keys(channels).length > 0
+            {JSON.stringify(channels)}
+            {/*{channels !== undefined && channels !== null && Object.keys(channels).length > 0
                 ?   channels.map((channel, key) => (
-                        <div key={key}>{channel.name}, {channel.members.map((member: any, index:number) => <div key={index}>{member.name}</div>)}</div>
-                ))
-                :   <div>Loading...</div>
-        }
+                        <div key={key}>
+                            Name: {channel.name} <br/>
+                        </div>
+                    ))
+                :   <div>
+                        Loading...
+                    </div>
+        }*/}
         </>
     )
 }
