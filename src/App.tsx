@@ -7,6 +7,7 @@ import NestedContextTest from "./NestedContextTest";
 
 class SocketTest extends Component {
   state: { status: any, socket: Socket };
+
   socket: Socket;
 
   constructor(props: any) {
@@ -30,9 +31,11 @@ class SocketTest extends Component {
       socket: this.socket
     };
   }
+  
   componentWillUnmount() {
     this.socket.disconnect();
   }
+
   render() {
     return <>{this.state.status}</>;
   }

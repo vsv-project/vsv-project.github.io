@@ -5,11 +5,11 @@ import { useContext } from "react"
  *  @returns The context value or throws an error if the context is not available.
  * */
 function useContextCheck(context: React.Context<any>) {
-    const ctx = useContext(context)
-    if (ctx !== undefined) {
-        return ctx
-    } else {
-        throw new Error("it no worke")
-    }
+  const ctx = useContext(context)
+  if (ctx !== undefined) {
+    return ctx
+  } else {
+    throw new Error("it no worke")
+  }
 }
 export default useContextCheck
