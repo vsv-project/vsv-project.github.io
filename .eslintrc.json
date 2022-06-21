@@ -21,6 +21,11 @@
     "prettier"
   ],
   "rules": {
-    "indent": ["warn", 2]
+    "indent": ["warn", 2],
+    "no-shadow": 0,
+    "@typescript-eslint/no-shadow": ["error"],
+    "react/jsx-filename-extension": [0, { "allow": "as-needed" }],
+    "import/no-extraneous-dependencies": [0],
+    "import/extensions": [0]
   }
 }
