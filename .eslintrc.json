@@ -21,6 +21,6 @@
     "prettier"
   ],
   "rules": {
-    "indent": [2, "warn"]
+    "indent": ["warn", 2]
   }
 }
