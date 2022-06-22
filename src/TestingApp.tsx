@@ -1,60 +1,52 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { SocketContext, Socket } from "./context/socket";
-import { AuthContext } from "./context/auth";
-import useContextCheck from "./context/useContextCheck";
-import UserContext from "./UserContext";
-import ContextTester from "./ContextTester";
+import { useAuth, AuthProvider, DbProvider, auth, getRef } from "./context/firebase";
+import { onValue } from "firebase/database"
+import {signInWithEmailAndPassword, signOut} from "firebase/auth"
 
-type ChannelType = {
-    name: any;
-    id: any;
-    members: any[];
-    messages: any[];
-}
 
 const Home = () => {
-  const {auth, setAuth} = useContextCheck(AuthContext)
-  const socket = useContextCheck(SocketContext)
-  const user = "😁";
+  const user = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const signup = (email: string, password: string) => {
-    socket.emit("signup", {email, password});
-  }
-  const login = (email: string, password: string) => {
-    socket.emit("login", {email, password});
-  }
-  const signout = () => {
-    socket.emit("signout")
-  }
-  const signupListener = useCallback((data: any) => {
-    console.log(data)
-    setAuth(data.data.user)
-  }, [setAuth]);
-  const loginListener = useCallback((data: any) => {
-    console.log(data)
-    setAuth(data.data.user)
-  }, [setAuth]);
-  const signoutListener = useCallback((data: any) => {
-    console.log(data)
-    setAuth(data.data.user)
-  }, [setAuth]);
-
-  useEffect(() => {
-    socket.on("signup", signupListener)
-    socket.on("login", loginListener)
-    socket.on("signout", signoutListener)
-    return () => {
-      socket.off("signup", signupListener)
-      socket.off("login", loginListener)
-      socket.off("signout", signoutListener)
-    }
-  }, [socket, signupListener, loginListener, signoutListener])
+  //createUserWithEmailAndPassword(auth, email, password)
+  //  .then((userCredential) => {
+  //    console.log(auth)
+  //    // Sign up successful. 
+  //    const user = userCredential.user
+  //    const status = "success"
+  //    console.log(user)
+  //    socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {user: user}});
+  //  })
+  //  .catch((error) => {
+  //    const errorCode = error.code;
+  //    const errorMessage = error.message;
+  //    const status = "failure"
+  //    console.log(errorCode, errorMessage);
+  //    socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {error: {errorCode: errorCode, errorMessage: errorMessage}}});
+  //  });
+  const login = (email: string, password: string) => signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Sign in sucessful.
+      const user = userCredential.user
+      console.log("user:", user);
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    });
+  const signout = () => signOut(auth)
+    .then(() => {
+      console.log(auth.currentUser);
+      // Sign-out successful.
+    })
+    .catch((error) => {
+      console.log(error);
+    });
   return (
-    <UserContext.Provider value={user}>
+    <>
       <h1>
           Home
       </h1>
@@ -67,60 +59,38 @@ const Home = () => {
         <input type="email" placeholder="Email" name="email" onChange={(e) => setEmail(e.target.value)} />
         <input type="password" placeholder="Password" name="password" onChange={(e) => setPassword(e.target.value)} />
         <button type="button" onClick={() => login(email, password)}>Login</button>
-        <button type="button" onClick={() => signup(email, password)}>Signup</button>
         <button type="button" onClick={() => signout()}>Signout</button>
       </form>
-      {!auth ? <p>Not logged in</p> : <p>Logged in as {auth.email}</p>}
-      <ContextTester />
-    </UserContext.Provider>
+      {!user ? <p>Not logged in</p> : <p>Logged in as {user.email}</p>}
+    </>
   )
 }
 
 const Channels = () => {
-  const socket = useContextCheck(SocketContext)
-  const [channels, setChannels] = useState<any[] | undefined>([])
-  const channelListener = useCallback((data: any) => {
-    console.log(data)
-    if (data.status === "success") {
-      let channels = [];
-      let channelsKeys = Object.keys(data.data.channels)
-      for (let i = 0; i < channelsKeys.length; i++) {
-        let members = [];
-        let messages = [];
-        let channel: ChannelType = {
-          id: data.data.channels[channelsKeys[i]].id,
-          name: data.data.channels[channelsKeys[i]].name,
-          members: [],
-          messages: [],
-        };
-        let membersKeys = Object.keys(data.data.channels[channelsKeys[i]].members)
-        let messagesKeys = Object.keys(data.data.channels[channelsKeys[i]].messages)
-        for (let j = 0; j < membersKeys.length; j++) {
-          members.push(data.data.channels[channelsKeys[i]].members[membersKeys[j]])
-        }
-        for (let j = 0; j < messagesKeys.length; j++) {
-          messages.push(data.data.channels[channelsKeys[i]].messages[messagesKeys[j]])
-        }
-        channel.members = members;
-        channel.messages = messages;
-        channels.push(channel);  
-      }
-      setChannels(channels)
-    } else {
-      setChannels(data.data.error)
-    }
-  }, [])
+  const user = useAuth();
+  const [channels, setChannels] = useState<any | undefined>(undefined)
+  
   useEffect(() => {
-    socket.on("getChannels", channelListener)
-    socket.emit("getChannels")
-    return () => {
-      socket.off("getChannels", channelListener)
+    if (user !== null) {
+      const publicChannels = getRef(`/users/${user.uid}/channels/`)
+      const unsubscribe = onValue(publicChannels, (snapshot) => {
+        console.log(snapshot)
+        setChannels(Object.keys(snapshot.val()))
+      }, (error) => {
+        console.error(error)
+      })
+      return () => {
+        unsubscribe()
+      }
     }
-  }, [channelListener, socket])
+    
+  }, [user])
+
+
   return (
     <>
       <Link to="/">Home</Link>
-      {JSON.stringify(channels)}
+      {channels !== undefined ? JSON.stringify(channels) : "no channels"}
       {/*{channels !== undefined && channels !== null && Object.keys(channels).length > 0
               ?   channels.map((channel, key) => (
                       <div key={key}>
@@ -136,37 +106,18 @@ const Channels = () => {
 }
 
 const App = () => {
-  const [auth, setAuth] = useState<any | undefined>(null);
-  const connect = useCallback(() => {
-    console.log("connected to socket")
-  }, []) 
-
-  const disconnect = useCallback(() => {
-    console.log("disconnected from socket")
-  }, []) 
-
-  useEffect(() => {
-    Socket.on("connect", connect)
-    Socket.on("disconnect", disconnect)
-        
-    return () => {
-      Socket.off("connect", connect)
-      Socket.off("disconnect", disconnect)
-    }
-  }, [connect, disconnect])
-
   return (
     <>
-      <SocketContext.Provider value={Socket}>
-        <AuthContext.Provider value={{auth, setAuth}}>
+      <AuthProvider>
+        <DbProvider>
           <Router>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/channels" element={<Channels />}/>
             </Routes>
           </Router>
-        </AuthContext.Provider>
-      </SocketContext.Provider>
+        </DbProvider>
+      </AuthProvider>
     </>
   )
 } 
