@@ -3,29 +3,25 @@ import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { useAuth, AuthProvider, DbProvider, auth, getRef } from "./context/firebase";
 import { onValue } from "firebase/database"
-import {signInWithEmailAndPassword, signOut} from "firebase/auth"
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, UserCredential} from "firebase/auth"
 
 
 const Home = () => {
   const user = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  //createUserWithEmailAndPassword(auth, email, password)
-  //  .then((userCredential) => {
-  //    console.log(auth)
-  //    // Sign up successful. 
-  //    const user = userCredential.user
-  //    const status = "success"
-  //    console.log(user)
-  //    socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {user: user}});
-  //  })
-  //  .catch((error) => {
-  //    const errorCode = error.code;
-  //    const errorMessage = error.message;
-  //    const status = "failure"
-  //    console.log(errorCode, errorMessage);
-  //    socket.emit("signup", {timestamp: new Date().toUTCString(), status: status, data: {error: {errorCode: errorCode, errorMessage: errorMessage}}});
-  //  });
+
+  const signup = (email: string, password: string) => createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential: UserCredential) => {
+      // Sign up successful. 
+      const user = userCredential.user
+      console.log(user)
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    });
   const login = (email: string, password: string) => signInWithEmailAndPassword(auth, email, password)
     .then((userCredential) => {
       // Sign in sucessful.
@@ -60,6 +56,7 @@ const Home = () => {
         <input type="password" placeholder="Password" name="password" onChange={(e) => setPassword(e.target.value)} />
         <button type="button" onClick={() => login(email, password)}>Login</button>
         <button type="button" onClick={() => signout()}>Signout</button>
+        <button type="button" onClick={() => signup(email, password)}></button>
       </form>
       {!user ? <p>Not logged in</p> : <p>Logged in as {user.email}</p>}
     </>

@@ -1,88 +1,155 @@
-import { Component } from "react";
-// import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
-import UserContext from "./UserContext";
-import ContextTester from "./ContextTester";
-import NestedContextTest from "./NestedContextTest";
+/* eslint-disable @typescript-eslint/no-shadow */
+import { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
+import { useAuth, AuthProvider, DbProvider, auth, getRef } from "./context/firebase";
+import { onValue } from "firebase/database"
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, UserCredential} from "firebase/auth"
 
-class SocketTest extends Component {
-  state: { status: any, socket: Socket };
 
-  socket: Socket;
+const Home = () => {
+  const user = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  constructor(props: any) {
-    super(props);
-    this.socket = io(process.env.REACT_APP_API_ENDPOINT + "/wss", {
-      transports: ["websocket"],
+  const signup = (email: string, password: string) => createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential: UserCredential) => {
+      // Sign up successful. 
+      const user = userCredential.user
+      console.log(user)
     })
-    console.log("connecting to socket")
-    console.log(this.socket)
-    this.socket =  this.socket.connect();
-    this.socket.on("connect", () => {
-      console.log("connected");
-      this.setState({ status: "connected" });
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
     });
-    this.socket.on("disconnect", () => {
-      console.log("disconnected");
-      this.setState({ status: "disconnected" });
+  const login = (email: string, password: string) => signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Sign in sucessful.
+      const user = userCredential.user
+      console.log("user:", user);
     })
-    this.state = {
-      status: "disconnected",
-      socket: this.socket
-    };
-  }
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    });
+  const signout = () => signOut(auth)
+    .then(() => {
+      console.log(auth.currentUser);
+      // Sign-out successful.
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  return (
+    <>
+      <h1>
+          Home
+      </h1>
+      <br/>
+      <Link to="/channels">
+        <button>Channels</button>
+      </Link>
+      <br/>
+      <form>
+        <input type="email" placeholder="Email" name="email" onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" name="password" onChange={(e) => setPassword(e.target.value)} />
+        <button type="button" onClick={() => login(email, password)}>Login</button>
+        <button type="button" onClick={() => signout()}>Signout</button>
+        <button type="button" onClick={() => signup(email, password)}>Signup</button>
+      </form>
+      {!user ? <p>Not logged in</p> : <p>Logged in as {user.email}</p>}
+    </>
+  )
+}
+
+const Channels = () => {
+  const user = useAuth();
+  const [channels, setChannels] = useState<any | undefined>(undefined)
   
-  componentWillUnmount() {
-    this.socket.disconnect();
-  }
-
-  render() {
-    return <>{this.state.status}</>;
-  }
-}
-
-export class Test extends Component {
-  state = { msg: null };
-
-  componentDidMount() {
-    fetch(process.env.REACT_APP_API_ENDPOINT + "/test")
-      .then(res => res.text())
-      .then(msg => {
-        this.setState({ msg });
+  useEffect(() => {
+    if (user !== null) {
+      const publicChannels = getRef(`/users/${user.uid}/channels/`)
+      const unsubscribe = onValue(publicChannels, (snapshot) => {
+        console.log(snapshot)
+        setChannels(Object.keys(snapshot.val()))
+      }, (error) => {
+        console.error(error)
       })
-      .catch(err => {
-        throw err;
-      });
-  }
-
-  render() {
-    return (
-      <div className="App">
-        <h1>Chat App</h1>
-        <p>Server message: {this.state.msg || "loading..."}</p>
-      </div>
-    );
-  }
-}
-
-export default function App() {
-  var user = "😁"; //TODO Put auth and user details here
+      return () => {
+        unsubscribe()
+      }
+    }
+    
+  }, [user])
 
   return (
     <>
-      {/* Provides to all children */}
-      <UserContext.Provider value={user}>
-        <Test />
-        <SocketTest />
-        <ContextTester />
-        <NestedContextTest />
-        {/*<Router>
-          <Routes>
-          <Route path="/" element={<Test />} />
-          </Routes>
-          </Router>
-        */}
-      </UserContext.Provider>
+      <Link to="/">Home</Link>
+      {channels !== undefined ? JSON.stringify(channels) : "no channels"}
+      {/*{channels !== undefined && channels !== null && Object.keys(channels).length > 0
+              ?   channels.map((channel, key) => (
+                      <div key={key}>
+                          Name: {channel.name} <br/>
+                      </div>
+                  ))
+              :   <div>
+                      Loading...
+                  </div>
+      }*/}
     </>
-  );
+  )
 }
+
+const Channel = () => {
+  const location = useLocation()
+  const user = useAuth();
+  const [channel, setChannel] = useState<any | undefined>(null)
+  const [error, setError] = useState<any | undefined>(null)
+
+  useEffect(() => {
+    if (!user) {
+      console.log(user)
+      setError({error: "Not logged in"})
+    } else {
+      const channelRef = getRef(`/channels/${location.pathname.split("/")[2]}`)
+      const unsubscribe = onValue(channelRef, (snapshot) => {
+        console.log(snapshot)
+        setChannel(snapshot.val())
+        setError(null)
+      }, (error) => {
+        console.error(error)
+        setError(error)
+      })
+      return unsubscribe
+    }
+  }, [user])
+  return (
+    <>
+      <Link to="/">Home</Link>
+      <br/>
+      {error ? <p>{JSON.stringify(error)}</p> : null}
+      {(channel !== null && channel !== undefined) || !error ? JSON.stringify(channel) : null}
+    </>
+  )
+
+}
+
+const App = () => {
+  return (
+    <>
+      <AuthProvider>
+        <DbProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/channels" element={<Channels />}/>
+              <Route path="/c/:channel" element={<Channel />}/>
+            </Routes>
+          </Router>
+        </DbProvider>
+      </AuthProvider>
+    </>
+  )
+} 
+export default App
