@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState, useContext } from "react"
 import { initializeApp } from "firebase/app"
-import { getAuth } from "firebase/auth"
-import { getDatabase, ref } from "firebase/database"
+import { getAuth, createUserWithEmailAndPassword, UserCredential, signInWithEmailAndPassword,  } from "firebase/auth"
+import { getDatabase, ref, set } from "firebase/database"
 
 const config = {"apiKey": "AIzaSyBDK0n1WIWcU6h-_OrmtqvAY1acBRS7fHg","authDomain": "clompass-chat-app.firebaseapp.com","projectId": "clompass-chat-app","storageBucket": "clompass-chat-app.appspot.com","messagingSenderId": "319826122916","appId": "1:319826122916:web:44bf4e1bc13acdc8b4ae31"}
 
@@ -11,6 +11,28 @@ const db = getDatabase(firebase, "https://clompass-chat-app-default-rtdb.asia-so
 
 const DbContext = createContext<any | undefined>(undefined)
 const AuthContext = createContext<any | undefined>(undefined);
+
+const DbProvider: React.FC<any> = ({children}: any) => {
+  const database = db
+  return (
+    <DbContext.Provider value={database}>
+      {children}
+    </DbContext.Provider>
+  )
+}
+function useDb() {
+  const context = useContext<any>(DbContext);
+  if (context === undefined) {
+    throw new Error(
+      "useDb must be used within a DbProvider"
+    );
+  }
+  return context.user;
+
+}
+function getRef(url: string) {
+  return ref(db, url)
+}
 
 const AuthProvider: React.FC<any> = ({ children }: any) => {
   const [user, setUser] = useState<any>(null);
@@ -27,7 +49,7 @@ const AuthProvider: React.FC<any> = ({ children }: any) => {
   );
 };
   
-function useAuth() {
+function useUserAuth() {
   const context = useContext<any>(AuthContext);
   if (context === undefined) {
     throw new Error(
@@ -36,25 +58,54 @@ function useAuth() {
   }
   return context.user;
 }
-const DbProvider: React.FC<any> = ({children}: any) => {
-  const database = db
-  return (
-    <DbContext.Provider value={database}>
-      {children}
-    </DbContext.Provider>
-  )
+const useAuth = () => {
+  return auth
 }
-function useDb() {
-  const context = useContext<any>(DbContext);
-  if (context === undefined) {
-    throw new Error(
-      "useFirebaseAuth must be used within a FirebaseAuthProvider"
+const signUpUser = (email: string, password: string) => {
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential: UserCredential) => {
+      // Sign up successful. 
+      const user = userCredential.user
+      console.log(user)
+      const userRef = getRef(`/users/${user.uid}`);
+      set(userRef, {
+        name: user.email,
+        uid: user.uid,
+        channels: {
+          "root": true 
+        }
+      })
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    });
+}
+const signInUser = (email: string, password: string) => {
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Sign in sucessful.
+      const user = userCredential.user
+      console.log("user:", user);
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    });
+}
+const signOutUser = () => {
+  auth.signOut()
+    .then(() => {
+      // Sign out successful.
+    }
+    ).catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorCode, errorMessage);
+    }
     );
-  }
-  return context.user;
+}
 
-}
-function getRef(url: string) {
-  return ref(db, url)
-}
-export { AuthProvider, useAuth, DbProvider, useDb, auth, getRef };
+export { AuthProvider, useAuth, useUserAuth, DbProvider, useDb, getRef, signUpUser, signInUser, signOutUser };
