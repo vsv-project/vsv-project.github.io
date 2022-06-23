@@ -5,7 +5,7 @@ import { useAuth, AuthProvider, DbProvider, useUserAuth, getRef, signOutUser, si
 import { onValue, set, push } from "firebase/database"
 import "../node_modules/bootstrap/scss/bootstrap.scss"
 import "../node_modules/bootstrap/dist/js/bootstrap.min.js"  
-import { Navbar, Offcanvas, Nav, Form, Button } from "react-bootstrap"
+import { Navbar, Offcanvas, Nav, Form, Button, Stack, Container } from "react-bootstrap"
 import { LinkContainer } from "react-router-bootstrap";
 
 const LoginOffcanvas = (props: any) => {
@@ -224,13 +224,16 @@ const Channel = () => {
         <>
           <h1>Channel: {channel.name}</h1>
           <br/>
-          {messages.map((m: any, i: number) => (
-            <div key={i}>
-              ({new Date(new Date(m.timestamp).setMinutes(new Date(m.timestamp).getMinutes() - new Date(m.timestamp).getTimezoneOffset())).toUTCString()}) {m.name}: {m.text}
-              
-              <br/>
-            </div>
-          ))} 
+          <Container fluid className="text-light bg-dark">
+            <Stack gap={2}>
+              {messages.map((m: any, i: number) => (
+                <div key={i}>
+                  ({new Date(new Date(m.timestamp).setMinutes(new Date(m.timestamp).getMinutes() - new Date(m.timestamp).getTimezoneOffset())).toUTCString()}) {m.name}: {m.text}
+                  <br/>
+                </div>
+              ))} 
+            </Stack>
+          </Container>
           <form>
             <input type="text" name="message" id="message" onChange={(e) => setMessage(e.target.value)} />
             <button type="button" onClick={() => sendMessage(message)}>Send message</button>
