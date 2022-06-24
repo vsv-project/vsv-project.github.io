@@ -206,7 +206,7 @@ const Channel = () => {
     }
   }, [user])
   return (
-    <>
+    <div className="bg-dark">
       <Link to="/">
         <button>
           Home
@@ -224,7 +224,7 @@ const Channel = () => {
         <>
           <h1>Channel: {channel.name}</h1>
           <br/>
-          <Container fluid className="text-light bg-dark">
+          <Container fluid className="text-light">
             <Stack gap={2}>
               {messages.map((m: any, i: number) => (
                 <div key={i}>
@@ -242,7 +242,7 @@ const Channel = () => {
         : null
       }
 
-    </>
+    </div>
   )
 }
 
