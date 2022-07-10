@@ -3,3 +3,8 @@ body {
   background-color: #111;
   color: white;
 }
+.test {
+  min-height: 100vh;
+  max-height: 100vh;
+}
+@import "../node_modules/bootstrap/scss/bootstrap.scss"

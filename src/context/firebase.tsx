@@ -3,7 +3,14 @@ import { initializeApp } from "firebase/app"
 import { getAuth, createUserWithEmailAndPassword, UserCredential, signInWithEmailAndPassword,  } from "firebase/auth"
 import { getDatabase, ref, set } from "firebase/database"
 
-const config = {"apiKey": "AIzaSyBDK0n1WIWcU6h-_OrmtqvAY1acBRS7fHg","authDomain": "clompass-chat-app.firebaseapp.com","projectId": "clompass-chat-app","storageBucket": "clompass-chat-app.appspot.com","messagingSenderId": "319826122916","appId": "1:319826122916:web:44bf4e1bc13acdc8b4ae31"}
+const config = {
+  apiKey: "AIzaSyBDK0n1WIWcU6h-_OrmtqvAY1acBRS7fHg",
+  authDomain: "clompass-chat-app.firebaseapp.com",
+  projectId: "clompass-chat-app",
+  storageBucket: "clompass-chat-app.appspot.com",
+  messagingSenderId: "319826122916",
+  appId: "1:319826122916:web:44bf4e1bc13acdc8b4ae31"
+}
 
 const firebase = initializeApp(config)
 const auth = getAuth(firebase)
@@ -30,7 +37,7 @@ function useDb() {
   return context.user;
 
 }
-function getRef(url: string) {
+const getRef = (url: string) => {
   return ref(db, url)
 }
 
