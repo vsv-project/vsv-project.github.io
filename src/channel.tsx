@@ -33,7 +33,8 @@ export const Channel = () => {
     updates[`/messages/${channel}/${newMessageKey}`] = {
       timestamp: Date.now(),
       text: message,
-      name: user.email
+      name: user.email,
+      key: newMessageKey
     };
     update(getRef(), updates)
       .then(() => {
