@@ -93,13 +93,16 @@ const ChannelsOffcanvas = (props: any) => {
             : <>
               {channels.length > 0 
                 ? channels.map((channel: any, i: number) => (
-                  <Button variant="primary" key={i} onClick={() => {
-                    console.log(`Navigating to channel ${channel.name}`)
-                    navigate(`/c/${channel.name}`)
-                    setStatus(false)
-                  }}>
-                    {channel.name}
-                  </Button>
+                  <div key={i}>
+                    <Button variant="primary" onClick={() => {
+                      console.log(`Navigating to channel ${channel.name}`)
+                      navigate(`/c/${channel.name}`)
+                      setStatus(false)
+                    }}>
+                      {channel.name}
+                    </Button>
+                    <br/>
+                  </div>
                 ))
                 : <p>No channels</p>} 
               
@@ -125,6 +128,7 @@ export const AppNavbar = () => {
   }
   useEffect(() => {
     if (user) {
+      setLoginOCStatus(false)
       let ref = getRef(`users/${user.uid}/channels`);
       let Channels = onValue(ref, (snapshot) => {
         if (snapshot.val()) {
