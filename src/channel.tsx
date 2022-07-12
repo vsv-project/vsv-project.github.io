@@ -10,8 +10,8 @@ import {
   useAuthProvider,
 } from "./firebase/context/auth"
 import "./channels.scss"
-import { onValue, update, push, off, set } from "firebase/database";
-import { Stack, Form, Button } from "react-bootstrap";
+import { onValue, update, push, off, set, onChildAdded, query, orderByChild } from "firebase/database";
+import { Stack, Form, Button, Row, Col, Container } from "react-bootstrap";
 
 export const Channel = () => {
   const location = useLocation();
@@ -20,6 +20,7 @@ export const Channel = () => {
   const [messages, setMessages] = useState<Array<any>>([])
   const [error, setError] = useState<any>(null)
   const [message, setMessage] = useState<string>("")
+
   const sendMessage = (channel: any, message: string) => {
     const newMessageRef = push(getRef());
     const newMessageKey = newMessageRef.key;
@@ -52,18 +53,17 @@ export const Channel = () => {
   }, [])
 
   useEffect(() => {
-    off(getRef(`/messages/${location.pathname.split("/c/")[1]}`))
+    off(getRef(`/messages/${channel}`))
     setMessages([])
     setError(null)
     console.log(location.pathname.split("/c/")[1])
     setChannel(location.pathname.split("/c/")[1]);
-    onValue(getRef(`/messages/${location.pathname.split("/c/")[1]}`), (snapshot) => {
+    onChildAdded(query(getRef(`/messages/${location.pathname.split("/c/")[1]}`), orderByChild('timestamp')), (snapshot) => {
       setError(null)
-      let data: Array<any> = []
-      snapshot.forEach((childSnapshot) => {
-        data.push(childSnapshot.val())
-      })
-      setMessages(data)
+      console.log(snapshot.val())
+      let x = messages
+      x.push(snapshot.val())
+      setMessages(x)
     }, (error: any) => {
       console.log(error)
       setError({code: error.code, message: error.message})
@@ -74,58 +74,69 @@ export const Channel = () => {
   }, [location])
 
   return (
-    <>
-      <h1>{channel}</h1>
+    <div className="messagePage">
+      <h1>Channel: {channel}</h1>
       {error ? <p>{error.code}: {error.message}</p> : null}
       {messages.length > 0 && messages 
         ?
         <>
-          <>
-            <h1>Channel: {channel}</h1>
-            <div className="test2">
-              <Stack gap={3}>
-                {messages.map((m: any, i: number) => (
-                  <div key={i} className="message">
-                    <span className="timestamp">
-                      ({new Date(
-                        new Date(m.timestamp).setMinutes(
-                          new Date(m.timestamp).getMinutes() -
-                            new Date(m.timestamp).getTimezoneOffset()
-                        )
-                      ).toUTCString()})
-                    </span>
-                    <span className="user">
-                      {m.name}:
-                    </span>
-                    <div className="text">
-                      {m.text}
-                    </div>  
+          <div className="messages">
+            <Stack gap={3}>
+              {messages.map((m: any, i: number) => (
+                <div key={i} className="message">
+                  <span className="timestamp">
+                    ({new Date(
+                      new Date(m.timestamp).setMinutes(
+                        new Date(m.timestamp).getMinutes() -
+                          new Date(m.timestamp).getTimezoneOffset()
+                      )
+                    ).toUTCString()})
+                  </span>
+                  <span className="user">
+                    {m.name}:
+                  </span>
+                  <div className="text">
+                    {m.text}
+                  </div>  
+                </div>
+              ))}
+            </Stack>
+          </div>
+          <Container fluid >
+            <Form onSubmit={(event) => {
+              sendMessage(channel, message);
+              setMessage("");
+              event.preventDefault();
+            }}
+            className="testing425"
+            >
+              <Row className="align-items-center">
+                <Col>
+                  <div>
+                    <Form.Control 
+                      as="textarea" 
+                      placeholder="..." 
+                      name="message" 
+                      id="message"  
+                      value={message}
+                      rows={2}
+                      onChange={(e) => setMessage(e.target.value)}
+                    >
+                    </Form.Control>
                   </div>
-                ))}
-              </Stack>
-            </div>
-          </>
-          <Form onSubmit={(event) => {
-            sendMessage(channel, message);
-            setMessage("");
-            event.preventDefault();
-          }}>
-            <input
-              type="text"
-              name="message"
-              id="message"
-              placeholder="..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <Button type="submit" value="Submit">
-              Send message
-            </Button>
-          </Form>
+                </Col>
+                <Col md="auto">
+                  <Button type="submit" value="Submit">
+                    Send message
+                  </Button>
+                </Col>
+              </Row>
+            </Form>
+          </Container>
         </>
         : null
       }
-    </>
+    </div>
   )
 }
 

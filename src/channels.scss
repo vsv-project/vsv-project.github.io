@@ -1,9 +1,13 @@
-.testwrapper {
+.testing425 {
+    margin: 1.5%;
+}
+.messagePage {
     max-height: 100%;
     min-height: 100%;
 }
-.test2 {
-    max-height: 75vh;
+.messages {
+    max-height: 70vh;
+    min-height: 70vh;
     overflow: scroll;
     overflow-x: hidden;
 }
