@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import { useState,  useEffect} from "react";
+import { useState,  useEffect, useRef} from "react";
 import {
   useLocation,
 } from "react-router-dom";
@@ -10,10 +10,11 @@ import {
   useAuthProvider,
 } from "./firebase/context/auth"
 import "./channels.scss"
-import { onValue, update, push, off, set, onChildAdded, query, orderByChild } from "firebase/database";
+import { onValue, update, push, off, set, query, orderByChild } from "firebase/database";
 import { Stack, Form, Button, Row, Col, Container } from "react-bootstrap";
 
 export const Channel = () => {
+  let refs: any = useRef([])
   const location = useLocation();
   const user = useAuthProvider();
   const [channel, setChannel] = useState(location.pathname.split("/c/")[1])
@@ -46,24 +47,32 @@ export const Channel = () => {
         setError(error)
       })
   }
-
   useEffect(() => {
     console.log("component mounted")
     return () => {console.log("component unmounted")}
   }, [])
 
   useEffect(() => {
+    if (messages.length !== 0) {
+      refs.current[messages[messages.length - 1].key].scrollIntoView({behavior: "smooth", block: "end"})
+    } 
+  }, [messages])
+
+  useEffect(() => {
     off(getRef(`/messages/${channel}`))
+    refs.current = []
     setMessages([])
     setError(null)
     console.log(location.pathname.split("/c/")[1])
     setChannel(location.pathname.split("/c/")[1]);
-    onChildAdded(query(getRef(`/messages/${location.pathname.split("/c/")[1]}`), orderByChild('timestamp')), (snapshot) => {
+    onValue(query(getRef(`/messages/${location.pathname.split("/c/")[1]}`), orderByChild('timestamp')), (snapshot) => {
       setError(null)
-      console.log(snapshot.val())
-      let x = messages
-      x.push(snapshot.val())
-      setMessages(x)
+      let newMessages: any = []
+      snapshot.forEach((childSnapshot) => {
+        let data = { key: childSnapshot.key, ...childSnapshot.val() };
+        newMessages.push(data);
+      })
+      setMessages(newMessages)
     }, (error: any) => {
       console.log(error)
       setError({code: error.code, message: error.message})
@@ -75,33 +84,37 @@ export const Channel = () => {
 
   return (
     <div className="messagePage">
-      <h1>Channel: {channel}</h1>
-      {error ? <p>{error.code}: {error.message}</p> : null}
+      <div className="channelInfo">
+        <h1>Channel: {channel}</h1>
+        {error ? <p>{error.code}: {error.message}</p> : null}
+      </div>
+      
       {messages.length > 0 && messages 
         ?
         <>
           <div className="messages">
             <Stack gap={3}>
-              {messages.map((m: any, i: number) => (
-                <div key={i} className="message">
-                  <span className="timestamp">
-                    ({new Date(
-                      new Date(m.timestamp).setMinutes(
-                        new Date(m.timestamp).getMinutes() -
-                          new Date(m.timestamp).getTimezoneOffset()
-                      )
-                    ).toUTCString()})
-                  </span>
-                  <span className="user">
-                    {m.name}:
-                  </span>
-                  <div className="text">
-                    {m.text}
-                  </div>  
-                </div>
+              {messages.map((m, i) => (
+                <div className="message" ref={(el) => {refs.current[m.key] = el;console.log(refs.current[m.key])}} key={i} id={m.key}>
+                <span className="timestamp">
+                  ({new Date(
+                    new Date(m.timestamp).setMinutes(
+                      new Date(m.timestamp).getMinutes() -
+                        new Date(m.timestamp).getTimezoneOffset()
+                    )
+                  ).toUTCString()})
+                </span>
+                <span className="user">
+                  {m.name}:
+                </span>
+                <div className="text">
+                  {m.text}
+                </div>  
+              </div>
               ))}
             </Stack>
           </div>
+          <br/>
           <Container fluid >
             <Form onSubmit={(event) => {
               sendMessage(channel, message);
@@ -114,13 +127,13 @@ export const Channel = () => {
                 <Col>
                   <div>
                     <Form.Control 
-                      as="textarea" 
+                      type="text"
                       placeholder="..." 
                       name="message" 
                       id="message"  
                       value={message}
-                      rows={2}
                       onChange={(e) => setMessage(e.target.value)}
+
                     >
                     </Form.Control>
                   </div>
@@ -133,6 +146,7 @@ export const Channel = () => {
               </Row>
             </Form>
           </Container>
+          
         </>
         : null
       }
