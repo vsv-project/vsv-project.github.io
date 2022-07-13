@@ -14,6 +14,7 @@ import { onValue, update, push, off, set, query, orderByChild } from "firebase/d
 import { Stack, Form, Button, Row, Col, Container } from "react-bootstrap";
 
 export const Channel = () => {
+  let y: any = useRef(0)
   let refs: any = useRef([])
   const location = useLocation();
   const user = useAuthProvider();
@@ -21,6 +22,15 @@ export const Channel = () => {
   const [messages, setMessages] = useState<Array<any>>([])
   const [error, setError] = useState<any>(null)
   const [message, setMessage] = useState<string>("")
+  const isElementInViewport = (el: Element) =>{
+    var rect = el.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /* or $(window).height() */
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /* or $(window).width() */
+    );
+}
 
   const sendMessage = (channel: any, message: string) => {
     const newMessageRef = push(getRef());
@@ -54,12 +64,18 @@ export const Channel = () => {
 
   useEffect(() => {
     if (messages.length !== 0) {
-      refs.current[messages[messages.length - 1].key].scrollIntoView({behavior: "smooth", block: "end"})
+      let el: any = document.getElementById(messages[messages.length - 4].key)
+      console.log(isElementInViewport(el))
+      if (isElementInViewport(el) || y.current === 0) {
+        refs.current[messages[messages.length - 1].key].scrollIntoView({behavior: "smooth", block: "end"})
+        y.current = 1
+      }
     } 
   }, [messages])
 
   useEffect(() => {
     off(getRef(`/messages/${channel}`))
+    y.current = 0
     refs.current = []
     setMessages([])
     setError(null)
@@ -95,7 +111,7 @@ export const Channel = () => {
           <div className="messages">
             <Stack gap={3}>
               {messages.map((m, i) => (
-                <div className="message" ref={(el) => {refs.current[m.key] = el;console.log(refs.current[m.key])}} key={i} id={m.key}>
+                <div className="message" ref={(el) => {refs.current[m.key] = el}} key={i} id={m.key}>
                 <span className="timestamp">
                   ({new Date(
                     new Date(m.timestamp).setMinutes(
@@ -114,37 +130,36 @@ export const Channel = () => {
               ))}
             </Stack>
           </div>
-          <br/>
           <Container fluid >
-            <Form onSubmit={(event) => {
-              sendMessage(channel, message);
-              setMessage("");
-              event.preventDefault();
-            }}
-            className="testing425"
-            >
-              <Row className="align-items-center">
-                <Col>
-                  <div>
-                    <Form.Control 
-                      type="text"
-                      placeholder="..." 
-                      name="message" 
-                      id="message"  
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-
-                    >
-                    </Form.Control>
-                  </div>
-                </Col>
-                <Col md="auto">
-                  <Button type="submit" value="Submit">
-                    Send message
-                  </Button>
-                </Col>
-              </Row>
-            </Form>
+            <div className="messageForm">
+              <Form onSubmit={(event) => {
+                sendMessage(channel, message);
+                setMessage("");
+                event.preventDefault();
+              }}
+              >
+                <Row className="align-items-center">
+                  <Col>
+                      <Form.Control 
+                        type="text"
+                        placeholder="..." 
+                        name="message" 
+                        id="message"  
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+  
+                      >
+                      </Form.Control>
+                  </Col>
+                  <Col md="auto">
+                    <Button type="submit" value="Submit">
+                      Send message
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
+            </div>
+            
           </Container>
           
         </>
