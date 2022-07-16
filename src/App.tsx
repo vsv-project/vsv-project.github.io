@@ -13,20 +13,21 @@ import {
 import { Channel } from "./channel";
 import { AppNavbar } from "./navbar";
 import "./index.scss";
-import "../node_modules/bootstrap/dist/js/bootstrap.min.js";
 import { LandingPage } from "./LandingPage";
 
 const App = () => {
   return (
-    <div className="bg-dark text-light test">
+    <div className="bg-dark text-light app">
       <Router>
         <AuthProvider>
           <DBProvider>
-            <AppNavbar />
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/c/:channel" element={<Channel />} />
-            </Routes>
+            <div className="content">
+              <AppNavbar />
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/c/:channel" element={<Channel />} />
+              </Routes>
+            </div>
           </DBProvider>
         </AuthProvider>
       </Router>

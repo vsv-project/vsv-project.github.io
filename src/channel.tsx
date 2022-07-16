@@ -10,7 +10,7 @@ import {
   useAuthProvider,
 } from "./firebase/context/auth"
 import "./channels.scss"
-import { onValue, update, push, off, set, query, orderByChild } from "firebase/database";
+import { onValue, update, push, off, query, orderByChild } from "firebase/database";
 import { Stack, Form, Button, Row, Col, Container } from "react-bootstrap";
 
 export const Channel = () => {
@@ -22,7 +22,10 @@ export const Channel = () => {
   const [messages, setMessages] = useState<Array<any>>([])
   const [error, setError] = useState<any>(null)
   const [message, setMessage] = useState<string>("")
-  const isElementInViewport = (el: Element) =>{
+  const isElementInViewport = (el: Element | null) => {
+    if (el === null) {
+      return
+    }
     var rect = el.getBoundingClientRect();
     return (
         rect.top >= 0 &&
@@ -30,7 +33,7 @@ export const Channel = () => {
         rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /* or $(window).height() */
         rect.right <= (window.innerWidth || document.documentElement.clientWidth) /* or $(window).width() */
     );
-}
+  }
 
   const sendMessage = (channel: any, message: string) => {
     const newMessageRef = push(getRef());
@@ -57,37 +60,62 @@ export const Channel = () => {
         setError(error)
       })
   }
+  //const deleteMessage = (id: string) => {
+  //  const messageRef = 
+  //}
+  //
+  //const updateMessage = (id: string, message: string) => {
+  //
+  //}
   useEffect(() => {
     console.log("component mounted")
     return () => {console.log("component unmounted")}
   }, [])
 
   useEffect(() => {
-    if (messages.length !== 0) {
-      let el: any = document.getElementById(messages[messages.length - 4].key)
-      console.log(isElementInViewport(el))
-      if (isElementInViewport(el) || y.current === 0) {
-        refs.current[messages[messages.length - 1].key].scrollIntoView({behavior: "smooth", block: "end"})
+    console.log("Messages useEffect - y.current: " + y.current)
+    console.log("Messages useEffect - current messages: ")
+    console.log(messages)
+    if (messages.length !== 0 && messages !== []) {
+      console.log("Messages useEffect - there are messages")
+      let el: HTMLElement | null = document.getElementById(messages[messages.length - 4].key)
+      if (y.current === 0) {
+        console.log("y.current: " + y.current)
+        console.log("scrolling to element: " + refs.current[messages[messages.length - 1].key].innerText)
+        setTimeout(() => {
+          console.log("scrolling now")
+          const el = document.getElementById(messages[messages.length - 1].key)
+          console.log(el)
+          el?.scrollIntoView({behavior: "smooth", block: "end"})
+          console.log("scrolled now")
+        }, (messages.length * 3) + 100)
         y.current = 1
+      } else if (isElementInViewport(el)) {
+        refs.current[messages[messages.length - 1].key].scrollIntoView({behavior: "smooth", block: "end"})
       }
     } 
   }, [messages])
 
   useEffect(() => {
+    console.log("------------------------------------------------------")
+    console.log("------------------------------------------------------")
+    console.log("------------------------------------------------------")
     off(getRef(`/messages/${channel}`))
     y.current = 0
     refs.current = []
     setMessages([])
     setError(null)
-    console.log(location.pathname.split("/c/")[1])
+    console.log("Channel: " + location.pathname.split("/c/")[1])
     setChannel(location.pathname.split("/c/")[1]);
     onValue(query(getRef(`/messages/${location.pathname.split("/c/")[1]}`), orderByChild('timestamp')), (snapshot) => {
+      console.log("messages got")
       setError(null)
       let newMessages: any = []
       snapshot.forEach((childSnapshot) => {
         let data = { key: childSnapshot.key, ...childSnapshot.val() };
         newMessages.push(data);
       })
+      console.log("last message: " + JSON.stringify(newMessages[newMessages.length - 1]))
       setMessages(newMessages)
     }, (error: any) => {
       console.log(error)
@@ -97,7 +125,7 @@ export const Channel = () => {
       off(getRef(`/messages/${location.pathname.split("/c/")[1]}`))
     }
   }, [location])
-
+  
   return (
     <div className="messagePage">
       <div className="channelInfo">
@@ -110,7 +138,7 @@ export const Channel = () => {
         <>
           <div className="messages">
             <Stack gap={3}>
-              {messages.map((m, i) => (
+              {messages.map((m, i) => {return (
                 <div className="message" ref={(el) => {refs.current[m.key] = el}} key={i} id={m.key}>
                 <span className="timestamp">
                   ({new Date(
@@ -127,10 +155,10 @@ export const Channel = () => {
                   {m.text}
                 </div>  
               </div>
-              ))}
+              )})}
             </Stack>
           </div>
-          <Container fluid >
+          <Container fluid className="messageForm">
             <div className="messageForm">
               <Form onSubmit={(event) => {
                 sendMessage(channel, message);
@@ -168,113 +196,3 @@ export const Channel = () => {
     </div>
   )
 }
-
-
-
-export function Channel2() {
-  const location = useLocation();
-  const user = useAuthProvider();
-  const [channel, setChannel] = useState(location.pathname.split("/")[2])
-  const [channelRef, setChannelRef] = useState(getRef(`channels/${channel}`))
-  const [newMessageRef, setNewMessageRef] = useState(push(getRef(`channels/${channel}/messages`)))
-  const [channelData, setChannelData] = useState<any | undefined>(null);
-  const [messages, setMessages] = useState<any | undefined>(null);
-  const [error, setError] = useState<any | undefined>(null);
-  const [message, setMessage] = useState<string>("");
-
-  const sendMessage = (message: any) => {
-    set(newMessageRef, {
-      text: message,
-      timestamp: new Date().valueOf(),
-      name: user.email,
-    });
-  };
-
-  useEffect(() => {
-    setChannel(location.pathname.split("/")[2])
-    setChannelRef(getRef(`channels/${location.pathname.split("/")[2]}`))
-    setNewMessageRef(push(getRef(`channels/${location.pathname.split("/")[2]}/messages`)))
-  }, [location, user])
-
-  useEffect(() => {
-    off(channelRef);
-    console.log("channel", channel);
-    if (!user) {
-      console.log(user);
-      setError({ error: "Not logged in" });
-    } else {
-      const unsubscribe = onValue(
-        channelRef,
-        (snapshot) => {
-          console.log(snapshot);
-          let messages = snapshot.child("messages");
-          let list: any = [];
-          messages.forEach((childSnapshot) => {
-            let data = { key: childSnapshot.key, ...childSnapshot.val() };
-            list.push(data);
-          });
-          setMessages(list);
-          setChannelData(snapshot.val());
-          setError(null);
-        },
-        (error) => {
-          console.error(error);
-          setError(error);
-        }
-      );
-      return () => {
-        unsubscribe()
-      }
-    }
-  }, [user, location]);
-  return (
-    <div className="testwrapper">
-      {error ? <p>{error.code}: {error.message}</p> : null}
-      {channelData !== null && channelData !== undefined && !error ? (
-        <>
-          <>
-            <h1>Channel: {channelData.name}</h1>
-            <div className="test2">
-              <Stack gap={3}>
-                {messages.map((m: any, i: number) => (
-                  <div key={i} className="message">
-                    <span className="timestamp">
-                      ({new Date(
-                        new Date(m.timestamp).setMinutes(
-                          new Date(m.timestamp).getMinutes() -
-                            new Date(m.timestamp).getTimezoneOffset()
-                        )
-                      ).toUTCString()})
-                    </span>
-                    <span className="user">
-                      {m.name}:
-                    </span>
-                    <div className="text">
-                      {m.text}
-                    </div>  
-                  </div>
-                ))}
-              </Stack>
-            </div>
-          </>
-          <Form>
-            <input
-              type="text"
-              name="message"
-              id="message"
-              placeholder="..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <Button type="button" onClick={() => {
-              sendMessage(message);
-              setMessage("");
-            }}>
-              Send message
-            </Button>
-          </Form>
-        </>
-      ) : null}
-    </div>
-  );
-};
